@@ -105,3 +105,4 @@ CREATE POLICY "Public Insert/Update TimeSlots" ON public.timeslots FOR ALL USING
 
 CREATE POLICY "Public Read Access Timetables" ON public.timetables FOR SELECT USING (true);
 CREATE POLICY "Public Insert/Update Timetables" ON public.timetables FOR ALL USING (true);
+

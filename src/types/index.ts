@@ -101,3 +101,4 @@ export interface UserProfile {
   email: string;
   role: 'admin' | 'faculty' | 'student';
 }
+

@@ -25,3 +25,4 @@ INSERT INTO public.subjects (id, subject_code, subject_name, course, year, semes
 ('sub-5', 'OS', 'Operating Systems', 'TY BSc CS', 3, 5, 'A', 'Theory', 3, 't-1', 1),
 ('sub-6', 'JL', 'Java Lab', 'TY BSc CS', 3, 5, 'A', 'Practical', 2, 't-3', 2)
 ON CONFLICT (id) DO NOTHING;
+

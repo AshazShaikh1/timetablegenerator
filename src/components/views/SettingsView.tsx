@@ -320,3 +320,4 @@ CREATE TABLE IF NOT EXISTS public.timetables (
     </div>
   );
 }
+

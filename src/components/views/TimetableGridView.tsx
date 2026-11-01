@@ -358,3 +358,4 @@ export function TimetableGridView({
     </div>
   );
 }
+
