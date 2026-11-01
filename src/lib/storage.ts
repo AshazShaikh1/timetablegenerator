@@ -378,15 +378,22 @@ export function resetToSampleData(): void {
 }
 
 export function getCurrentUser(): UserProfile | null {
-  return safeGetItem<UserProfile | null>(STORAGE_KEYS.AUTH_USER, {
-    id: 'usr-admin',
-    username: 'admin',
-    name: 'Administrator',
-    email: 'admin@college.com',
-    role: 'admin',
-  });
+  return safeGetItem<UserProfile | null>(STORAGE_KEYS.AUTH_USER, null);
 }
 
 export function setCurrentUser(user: UserProfile | null): void {
-  safeSetItem(STORAGE_KEYS.AUTH_USER, user);
+  if (typeof window !== 'undefined') {
+    if (!user) {
+      try {
+        localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+        sessionStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+      } catch (e) {
+        console.error('Error removing auth user session', e);
+      }
+    } else {
+      safeSetItem(STORAGE_KEYS.AUTH_USER, user);
+    }
+  }
+  notifyChange();
 }
+

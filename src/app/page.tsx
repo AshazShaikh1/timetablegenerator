@@ -33,6 +33,7 @@ import {
 } from '@/lib/storage';
 import { Sidebar, NavTab } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { ToastProvider, useToast } from '@/components/common/Toast';
 import { LoginView } from '@/components/views/LoginView';
 import { DashboardView } from '@/components/views/DashboardView';
@@ -133,10 +134,17 @@ function MainApp() {
     saveSettings(updatedSettings);
   }
 
-  function handleLogout() {
+  async function handleLogout() {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.auth.signOut();
+      } catch (err) {
+        console.warn('Supabase signOut error', err);
+      }
+    }
     setCurrentUser(null);
     setUser(null);
-    success('Logged Out', 'You have been signed out.');
+    success('Logged Out', 'Your session has ended.');
   }
 
   // ---------------- Handlers for CRUD ----------------

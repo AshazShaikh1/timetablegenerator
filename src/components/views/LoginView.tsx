@@ -1,46 +1,76 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CalendarCheck, Lock, User, Eye, EyeOff, Sparkles } from 'lucide-react';
+import { CalendarCheck, Lock, User, Eye, EyeOff, Sparkles, LogIn, ShieldCheck } from 'lucide-react';
 import { UserProfile } from '@/types';
 import { setCurrentUser } from '@/lib/storage';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 interface LoginViewProps {
   onLoginSuccess: (user: UserProfile) => void;
 }
 
 export function LoginView({ onLoginSuccess }: LoginViewProps) {
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
-    // Simulate validation matching the project specifications
+    const trimmedUser = username.trim();
+
+    // 1. If Supabase is configured and email format is used, try Supabase Auth first
+    if (isSupabaseConfigured && supabase && trimmedUser.includes('@')) {
+      try {
+        const { data, error: supaError } = await supabase.auth.signInWithPassword({
+          email: trimmedUser,
+          password: password,
+        });
+
+        if (!supaError && data.user) {
+          const userSession: UserProfile = {
+            id: data.user.id,
+            username: data.user.email?.split('@')[0] || 'admin',
+            name: data.user.user_metadata?.full_name || 'Administrator',
+            email: data.user.email || trimmedUser,
+            role: 'admin',
+          };
+          setCurrentUser(userSession);
+          onLoginSuccess(userSession);
+          return;
+        }
+      } catch (err) {
+        console.warn('Supabase auth attempt error', err);
+      }
+    }
+
+    // 2. Validate institutional project admin credentials
     setTimeout(() => {
+      const lower = trimmedUser.toLowerCase();
       if (
-        (username.trim().toLowerCase() === 'admin' || username.trim() === 'admin@college.com') &&
+        (lower === 'admin' || lower === 'admin@college.com' || lower === 'unesh') &&
         password === 'admin123'
       ) {
-        const user: UserProfile = {
+        const userSession: UserProfile = {
           id: 'usr-admin-1',
-          username: 'admin',
-          name: 'Unesh Farooqui',
+          username: lower === 'unesh' ? 'unesh' : 'admin',
+          name: lower === 'unesh' ? 'Unesh Farooqui' : 'Administrator',
           email: 'admin@college.com',
           role: 'admin',
         };
-        setCurrentUser(user);
-        onLoginSuccess(user);
+        // Persist session
+        setCurrentUser(userSession);
+        onLoginSuccess(userSession);
       } else {
         setError('Invalid credentials (demo: admin / admin123).');
         setIsLoading(false);
       }
-    }, 400);
+    }, 350);
   }
 
   function fillDemo() {
@@ -67,6 +97,11 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
           </div>
         </div>
 
+        <div className="mb-6 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300">
+          <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+          <span>Please log in to initiate an authenticated session.</span>
+        </div>
+
         {error && (
           <div className="mb-5 p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-sm">
             {error}
@@ -83,9 +118,10 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
               <input
                 type="text"
                 required
+                autoFocus
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="admin"
+                placeholder="Enter username (e.g. admin)"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition"
               />
             </div>
@@ -102,7 +138,7 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Enter password"
                 className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition"
               />
               <button
@@ -139,9 +175,10 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full mt-4 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm shadow-md shadow-indigo-600/30 transition duration-150 disabled:opacity-50"
+            className="w-full mt-4 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm shadow-md shadow-indigo-600/30 transition duration-150 disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {isLoading ? 'Signing In...' : 'Login'}
+            <LogIn className="w-4 h-4" />
+            <span>{isLoading ? 'Creating Session...' : 'Login & Create Session'}</span>
           </button>
         </form>
 
