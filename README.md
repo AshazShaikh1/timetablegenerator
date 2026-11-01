@@ -56,11 +56,9 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 3. Demo Login Credentials
-- **Username**: `admin`
-- **Password**: `admin123`
-
-*(You can also click the **"Use demo login"** button on the sign-in screen).*
+### 3. Login Credentials
+- **Username**: `unesh`
+- **Password**: `Unesh@113`
 
 ---
 

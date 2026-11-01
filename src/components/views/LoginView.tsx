@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CalendarCheck, Lock, User, Eye, EyeOff, Sparkles, LogIn, ShieldCheck } from 'lucide-react';
+import { CalendarCheck, Lock, User, Eye, EyeOff, LogIn, ShieldCheck } from 'lucide-react';
 import { UserProfile } from '@/types';
 import { setCurrentUser } from '@/lib/storage';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
@@ -24,7 +24,7 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
 
     const trimmedUser = username.trim();
 
-    // 1. If Supabase is configured and email format is used, try Supabase Auth first
+    // 1. If Supabase is configured and email format is used, check Supabase Auth first
     if (isSupabaseConfigured && supabase && trimmedUser.includes('@')) {
       try {
         const { data, error: supaError } = await supabase.auth.signInWithPassword({
@@ -35,8 +35,8 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
         if (!supaError && data.user) {
           const userSession: UserProfile = {
             id: data.user.id,
-            username: data.user.email?.split('@')[0] || 'admin',
-            name: data.user.user_metadata?.full_name || 'Administrator',
+            username: data.user.email?.split('@')[0] || 'unesh',
+            name: data.user.user_metadata?.full_name || 'Unesh Farooqui',
             email: data.user.email || trimmedUser,
             role: 'admin',
           };
@@ -49,34 +49,25 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
       }
     }
 
-    // 2. Validate institutional project admin credentials
+    // 2. Validate dedicated project credentials: username "unesh", password "Unesh@113"
     setTimeout(() => {
-      const lower = trimmedUser.toLowerCase();
-      if (
-        (lower === 'admin' || lower === 'admin@college.com' || lower === 'unesh') &&
-        password === 'admin123'
-      ) {
+      const lowerUser = trimmedUser.toLowerCase();
+      if (lowerUser === 'unesh' && password === 'Unesh@113') {
         const userSession: UserProfile = {
-          id: 'usr-admin-1',
-          username: lower === 'unesh' ? 'unesh' : 'admin',
-          name: lower === 'unesh' ? 'Unesh Farooqui' : 'Administrator',
-          email: 'admin@college.com',
+          id: 'usr-unesh-13',
+          username: 'unesh',
+          name: 'Unesh Farooqui',
+          email: 'unesh@college.edu',
           role: 'admin',
         };
         // Persist session
         setCurrentUser(userSession);
         onLoginSuccess(userSession);
       } else {
-        setError('Invalid credentials (demo: admin / admin123).');
+        setError('Invalid username or password.');
         setIsLoading(false);
       }
     }, 350);
-  }
-
-  function fillDemo() {
-    setUsername('admin');
-    setPassword('admin123');
-    setError(null);
   }
 
   return (
@@ -99,7 +90,7 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
 
         <div className="mb-6 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300">
           <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-          <span>Please log in to initiate an authenticated session.</span>
+          <span>Please sign in to access the timetable management dashboard.</span>
         </div>
 
         {error && (
@@ -111,7 +102,7 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-              Username or Email
+              Username
             </label>
             <div className="relative">
               <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -121,7 +112,7 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
                 autoFocus
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter username (e.g. admin)"
+                placeholder="unesh"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition"
               />
             </div>
@@ -138,7 +129,7 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
+                placeholder="••••••••"
                 className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-hidden focus:ring-2 focus:ring-indigo-500 transition"
               />
               <button
@@ -161,15 +152,6 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
               />
               <span>Show password</span>
             </label>
-
-            <button
-              type="button"
-              onClick={fillDemo}
-              className="text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 font-medium"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Use demo login</span>
-            </button>
           </div>
 
           <button
@@ -178,7 +160,7 @@ export function LoginView({ onLoginSuccess }: LoginViewProps) {
             className="w-full mt-4 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm shadow-md shadow-indigo-600/30 transition duration-150 disabled:opacity-50 flex items-center justify-center gap-2"
           >
             <LogIn className="w-4 h-4" />
-            <span>{isLoading ? 'Creating Session...' : 'Login & Create Session'}</span>
+            <span>{isLoading ? 'Authenticating...' : 'Sign In'}</span>
           </button>
         </form>
 
